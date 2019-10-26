@@ -61,6 +61,12 @@ public class SpleefXPAPI extends PlaceholderExpansion {
         return "1.0-SNAPSHOT";
     }
 
+    /**
+     * The name of the plugin that this expansion hooks into. by default will return the deprecated
+     * {@link #getPlugin()} method
+     *
+     * @return plugin name that this expansion requires to function
+     */
     @Override
     public String getRequiredPlugin() {
         return "SpleefX";
