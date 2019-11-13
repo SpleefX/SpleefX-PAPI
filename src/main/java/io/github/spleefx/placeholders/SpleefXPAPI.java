@@ -18,16 +18,24 @@ package io.github.spleefx.placeholders;
 import io.github.spleefx.SpleefX;
 import io.github.spleefx.data.GameStats;
 import io.github.spleefx.data.PlayerStatistic;
-import io.github.spleefx.extension.ExtensionMode;
 import io.github.spleefx.extension.ExtensionsManager;
+import io.github.spleefx.extension.GameExtension;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * PlaceholderAPI expansion for SpleefX
  */
 public class SpleefXPAPI extends PlaceholderExpansion {
+
+    /**
+     * The number formatter
+     */
+    private static final NumberFormat FORMAT = NumberFormat.getInstance(Locale.US);
 
     /**
      * The SpleefX plugin
@@ -80,9 +88,7 @@ public class SpleefXPAPI extends PlaceholderExpansion {
      */
     @Override
     public boolean canRegister() {
-        if (!Bukkit.getPluginManager().isPluginEnabled(getRequiredPlugin())) {
-            return false;
-        }
+        if (!Bukkit.getPluginManager().isPluginEnabled(getRequiredPlugin())) return false;
         plugin = (SpleefX) Bukkit.getPluginManager().getPlugin(getRequiredPlugin());
         return super.register() && plugin != null;
     }
@@ -97,37 +103,48 @@ public class SpleefXPAPI extends PlaceholderExpansion {
      */
     @Override
     public String onRequest(OfflinePlayer player, String identifier) {
-        if (player == null) return "0";
+        if (player == null) return format(0);
         GameStats stats = plugin.getDataProvider().getStatistics(player);
         switch (identifier.toLowerCase()) {
             case "games_played":
-                return Integer.toString(stats.get(PlayerStatistic.GAMES_PLAYED, null));
+                return format(stats.get(PlayerStatistic.GAMES_PLAYED, null));
             case "wins":
-                return Integer.toString(stats.get(PlayerStatistic.WINS, null));
+                return format(stats.get(PlayerStatistic.WINS, null));
             case "losses":
-                return Integer.toString(stats.get(PlayerStatistic.LOSSES, null));
+                return format(stats.get(PlayerStatistic.LOSSES, null));
             case "draws":
-                return Integer.toString(stats.get(PlayerStatistic.DRAWS, null));
+                return format(stats.get(PlayerStatistic.DRAWS, null));
             case "blocks_mined":
-                return Integer.toString(stats.get(PlayerStatistic.BLOCKS_MINED, null));
+                return format(stats.get(PlayerStatistic.BLOCKS_MINED, null));
             default:
                 String[] split = identifier.split("_");
                 String key = split[split.length - 1];
-                ExtensionMode mode = ExtensionsManager.getByKey(key);
+                GameExtension mode = ExtensionsManager.getByKey(key);
                 switch (identifier.substring(0, identifier.indexOf(split[split.length - 1]) - 1).toLowerCase()) {
                     case "games_played":
-                        return Integer.toString(stats.get(PlayerStatistic.GAMES_PLAYED, mode));
+                        return format(stats.get(PlayerStatistic.GAMES_PLAYED, mode));
                     case "wins":
-                        return Integer.toString(stats.get(PlayerStatistic.WINS, mode));
+                        return format(stats.get(PlayerStatistic.WINS, mode));
                     case "losses":
-                        return Integer.toString(stats.get(PlayerStatistic.LOSSES, mode));
+                        return format(stats.get(PlayerStatistic.LOSSES, mode));
                     case "draws":
-                        return Integer.toString(stats.get(PlayerStatistic.DRAWS, mode));
+                        return format(stats.get(PlayerStatistic.DRAWS, mode));
                     case "blocks_mined":
-                        return Integer.toString(stats.get(PlayerStatistic.BLOCKS_MINED, mode));
+                        return format(stats.get(PlayerStatistic.BLOCKS_MINED, mode));
                     default:
-                        return "0";
+                        return format(0);
                 }
         }
     }
+
+    /**
+     * Formats the specified number with commas
+     *
+     * @param number Number to format
+     * @return The formatted string
+     */
+    private static String format(int number) {
+        return FORMAT.format(number);
+    }
+
 }
