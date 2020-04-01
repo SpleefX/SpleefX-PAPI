@@ -17,20 +17,30 @@ package io.github.spleefx.placeholders;
 
 import io.github.spleefx.SpleefX;
 import io.github.spleefx.data.GameStats;
+import io.github.spleefx.data.LeaderboardTopper;
 import io.github.spleefx.data.PlayerStatistic;
 import io.github.spleefx.extension.ExtensionsManager;
 import io.github.spleefx.extension.GameExtension;
+import io.github.spleefx.util.code.Printable;
+import io.github.spleefx.util.game.Chat;
+import io.github.spleefx.util.plugin.PluginSettings;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
  * PlaceholderAPI expansion for SpleefX
  */
 public class SpleefXPAPI extends PlaceholderExpansion {
+
+    private static final List<String> INTS = new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
 
     /**
      * The number formatter
@@ -103,6 +113,47 @@ public class SpleefXPAPI extends PlaceholderExpansion {
      */
     @Override
     public String onRequest(OfflinePlayer player, String identifier) {
+        if (INTS.stream().anyMatch(identifier::contains)) {
+            String[] requested = identifier.split(":", 2);
+            System.out.println("Requested: " + Arrays.toString(requested));
+            String[] split = requested[0].split("_");
+            System.out.println("Split: " + Arrays.toString(split));
+            int pos = Integer.parseInt(split[split.length - 1]);
+            System.out.println("Pos: " + pos);
+            GameExtension extension = ExtensionsManager.getByKey(split[split.length - 2]);
+            System.out.println("Extension: " + extension);
+            String request = requested[1];
+            System.out.println("Request: " + request);
+            PlayerStatistic stat = PlayerStatistic.from(Printable.print(requested[0].substring(0, requested[0].lastIndexOf("_")), "Joiner"));
+            LeaderboardTopper topper;
+            List<LeaderboardTopper> toppers = plugin.getDataProvider().getTopPlayers(stat, extension);
+            try {
+                topper = toppers.get(pos - 1);
+            } catch (IndexOutOfBoundsException e) {
+                topper = toppers.get(toppers.size() - 1);
+            }
+            switch (request) {
+                case "name":
+                    return topper.getPlayer().getName();
+                case "pos":
+                    return format(pos);
+                case "stat":
+                case "count":
+                case "number":
+                case "score":
+                case "statistic":
+                    return format(topper.getCount());
+                case "format": {
+                    String format = PluginSettings.LEADERBOARDS_FORMAT.get();
+                    return Chat.colorize(format)
+                            .replace("{player}", topper.getPlayer().getName())
+                            .replace("{pos}", format(pos))
+                            .replace("{score}", format(topper.getCount()));
+                }
+                default:
+                    return "Invalid request: " + request;
+            }
+        }
         if (player == null) return format(0);
         GameStats stats = plugin.getDataProvider().getStatistics(player);
         switch (identifier.toLowerCase()) {
