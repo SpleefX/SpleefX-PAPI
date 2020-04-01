@@ -21,11 +21,9 @@ import io.github.spleefx.data.LeaderboardTopper;
 import io.github.spleefx.data.PlayerStatistic;
 import io.github.spleefx.extension.ExtensionsManager;
 import io.github.spleefx.extension.GameExtension;
-import io.github.spleefx.util.code.Printable;
 import io.github.spleefx.util.game.Chat;
 import io.github.spleefx.util.plugin.PluginSettings;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -115,16 +113,11 @@ public class SpleefXPAPI extends PlaceholderExpansion {
     public String onRequest(OfflinePlayer player, String identifier) {
         if (INTS.stream().anyMatch(identifier::contains)) {
             String[] requested = identifier.split(":", 2);
-            System.out.println("Requested: " + Arrays.toString(requested));
             String[] split = requested[0].split("_");
-            System.out.println("Split: " + Arrays.toString(split));
             int pos = Integer.parseInt(split[split.length - 1]);
-            System.out.println("Pos: " + pos);
             GameExtension extension = ExtensionsManager.getByKey(split[split.length - 2]);
-            System.out.println("Extension: " + extension);
             String request = requested[1];
-            System.out.println("Request: " + request);
-            PlayerStatistic stat = PlayerStatistic.from(Printable.print(requested[0].substring(0, requested[0].lastIndexOf("_")), "Joiner"));
+            PlayerStatistic stat = PlayerStatistic.from(requested[0].substring(0, requested[0].lastIndexOf("_")));
             LeaderboardTopper topper;
             List<LeaderboardTopper> toppers = plugin.getDataProvider().getTopPlayers(stat, extension);
             try {
