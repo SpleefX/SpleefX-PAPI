@@ -112,11 +112,11 @@ public class SpleefXPAPI extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer player, String identifier) {
         if (INTS.stream().anyMatch(identifier::contains)) {
-            String[] requested = identifier.split(":", 2);
+            String[] requested = identifier.split(":");
             String[] split = requested[0].split("_");
             int pos = Integer.parseInt(split[split.length - 1]);
-            GameExtension extension = ExtensionsManager.getByKey(split[split.length - 2]);
-            String request = requested[1];
+            GameExtension extension = ExtensionsManager.getByKey(requested[1]);
+            String request = requested[2];
             PlayerStatistic stat = PlayerStatistic.from(requested[0].substring(0, requested[0].lastIndexOf("_")));
             LeaderboardTopper topper;
             List<LeaderboardTopper> toppers = plugin.getDataProvider().getTopPlayers(stat, extension);
